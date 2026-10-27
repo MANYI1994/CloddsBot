@@ -1,0 +1,20 @@
+# Isolated offline validation only. Not a live market feed or trading daemon.
+services:
+  clodds-paper-smoke:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    user: "10001:10001"
+    network_mode: "none"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      NODE_ENV: production
+    volumes:
+      - ../../dist/solana:/app/dist/solana:ro
+    command: ["node", "-e", "const {PaperTradingEngine}=require('./dist/solana/paper-engine.js'); const e=new PaperTradingEngine(); const f=e.buy(4,0.01); e.sell(f.quantity,0.01); console.log(JSON.stringify({mode:'offline-paper-smoke',snapshot:e.snapshot()}));"]
+    restart: "no"
